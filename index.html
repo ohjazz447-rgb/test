@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1c3027">
+<meta name="description" content="ต้นแบบเว็บไซต์หอคำหลวงแบบ Cinematic Scroll ที่ภาพและข้อความเลื่อนไปพร้อมกัน">
+<title>หอคำหลวง — Cinematic Scroll | ข้อความเลื่อนตามภาพ</title>
+<style>
+:root{--bg:#1b3026;--text:#fff9e9;--gold:#ebce89;--mint:#dbebd5}
+*{box-sizing:border-box}html{scroll-behavior:auto}body{margin:0;background:var(--bg);color:var(--text);font-family:"Noto Sans Thai","Leelawadee UI",Tahoma,Arial,sans-serif;overflow-x:hidden}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+/* The image alone stays pinned; all textual content belongs to the scrolling document. */
+.experience{position:relative;height:700vh;height:700svh;isolation:isolate}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:#483e30;z-index:0;isolation:isolate}
+.image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;user-select:none}
+.vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(14,31,23,.88) 0%,rgba(14,31,23,.65) 24%,rgba(14,31,23,.11) 62%,transparent 100%),linear-gradient(0deg,rgba(13,31,23,.48),transparent 26%),linear-gradient(180deg,rgba(12,28,23,.24),transparent 22%)}
+/* Only the slim non-text progress bar sticks with the image. */
+.timeline{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.23);z-index:2}.timeline span{display:block;width:0;height:100%;background:var(--gold)}
+/* This overlay is attached to the tall section, NOT to the sticky image. */
+.story-track{position:absolute;inset:0;z-index:2;pointer-events:none}
+.story-header{position:absolute;top:0;left:0;right:0;padding:24px clamp(20px,5vw,86px);display:flex;justify-content:space-between;gap:16px;align-items:center;pointer-events:none}
+.brand{color:inherit;text-decoration:none;display:flex;align-items:center;gap:11px;pointer-events:auto}.flower{display:grid;place-items:center;width:38px;height:38px;flex:none;border:1px solid #e3ca96;border-radius:50%;font-size:23px;color:var(--gold)}.thai-name{font-size:13px;line-height:1.5;font-weight:700}.eng-name{font-size:9px;line-height:1.6;letter-spacing:.21em;opacity:.82}.eyemark{font-size:10px;letter-spacing:.12em;border:1px solid rgba(255,248,224,.55);border-radius:30px;padding:8px 12px;white-space:nowrap}
+.scene{position:absolute;left:0;right:0;min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:95px clamp(24px,9vw,140px) 85px}
+.scene--interior{top:0}.scene--door{top:190vh;top:190svh}.scene--exterior{top:420vh;top:420svh}
+.scene-content{width:min(490px,49vw);pointer-events:auto;text-shadow:0 2px 18px rgba(0,0,0,.19)}
+.kicker{font-size:11px;letter-spacing:.18em;font-weight:700;color:var(--gold);display:flex;gap:12px;align-items:center}.kicker:before{content:"";width:27px;height:1px;background:var(--gold)}
+.scene-id{font-family:Georgia,"Noto Sans Thai",serif;font-size:12px;letter-spacing:.07em;opacity:.88;margin:23px 0 12px}
+h1,h2{font-size:clamp(37px,5.2vw,77px);line-height:1.25;font-weight:580;letter-spacing:-.035em;margin:0 0 18px;text-wrap:balance}h1 em,h2 em{font-style:normal;color:var(--mint)}
+.divider{height:2px;width:45px;background:var(--gold);margin-bottom:17px}.desc{font-size:clamp(14px,1.13vw,17px);line-height:1.95;max-width:400px;color:#fff9e8e8;margin:0}
+.hint{display:flex;align-items:center;gap:12px;font-size:12px;color:#f7eacf;margin-top:23px}.hint svg{width:20px;height:28px;stroke:currentColor;fill:none}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}.control{border:1px solid rgba(255,248,222,.65);background:rgba(20,38,28,.58);color:#fff5e0;border-radius:999px;padding:10px 16px;min-height:45px;font-size:12px;backdrop-filter:blur(7px)}.control.primary{background:#f4e5c0;border-color:#f4e5c0;color:#294032;font-weight:700}.control:hover{border-color:white}
+.scene-tabs{display:flex;align-items:center;gap:10px;margin-top:20px;font-size:11px;flex-wrap:wrap}.scene-tabs button{color:#fdf3df;background:transparent;border:0;border-bottom:1px solid rgba(255,245,225,.54);padding:6px 1px;letter-spacing:.03em;font-size:11px}.scene-tabs button:hover{color:var(--gold)}
+.final-note{font-size:11px;letter-spacing:.09em;opacity:.85;margin-top:21px}
+.copy-hidden .scene-content>*:not(.actions),.copy-hidden .story-header{visibility:hidden}
+.copy-hidden .scene-content .actions{opacity:1}
+/* Compact pictographic playback control stays available after the initial text scrolls away. */
+.playback-fab{position:absolute;right:21px;bottom:24px;z-index:3;width:46px;height:46px;border:1px solid rgba(255,248,222,.7);background:rgba(18,42,28,.64);color:#fff4d9;border-radius:50%;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.playback-fab.visible{display:flex}.playback-fab svg{height:18px;width:18px;fill:currentColor}
+.afterword{background:#f5f2e9;color:#244432;display:grid;grid-template-columns:1.2fr 1fr;gap:52px;padding:75px clamp(25px,9vw,150px) 90px}.afterword h2{font-size:clamp(29px,3vw,42px);margin:13px 0 20px}.afterword p,.afterword li{font-size:14px;line-height:1.95;color:#51695b}.afterword .eyebrow{font-size:11px;letter-spacing:.15em;color:#8a7045;font-weight:700}.afterword .note{font-size:12px;color:#8e7f6b}.tech{margin:27px 0 0;padding-left:20px}.tech li{margin-bottom:7px}
+@media(max-width:780px){.story-header{padding:15px 17px}.flower{width:32px;height:32px}.thai-name{font-size:11px}.eng-name{font-size:8px;letter-spacing:.1em}.eyemark{font-size:9px;padding:7px 9px}.image{object-position:center 40%}.vignette{background:linear-gradient(0deg,rgba(14,31,23,.94) 0%,rgba(14,31,23,.76) 37%,rgba(14,31,23,.13) 87%)}.scene{align-items:flex-end;padding:75px 23px 108px}.scene-content{width:min(440px,calc(100% - 35px))}.kicker{font-size:10px;letter-spacing:.07em}.scene-id{font-size:11px;margin:13px 0 8px}h1,h2{font-size:clamp(33px,8.6vw,52px);margin-bottom:13px}.divider{margin-bottom:12px}.desc{font-size:13px;line-height:1.78}.hint{font-size:11px;margin-top:13px}.actions{margin-top:15px}.scene-tabs{margin-top:9px}.final-note{margin-top:12px}.afterword{grid-template-columns:1fr;gap:12px;padding:50px 25px}.playback-fab{bottom:16px;right:17px}}
+@media(max-width:420px){.eyemark{display:none}.scene{padding-bottom:79px}.scene-content{width:100%}.kicker{font-size:9px}.desc{font-size:12px}.actions{gap:7px}.control{padding:9px 12px;min-height:43px;font-size:11px}.scene-tabs{gap:8px;font-size:10px}.scene-tabs button{font-size:10px}.hint{margin-top:10px}}
+@media(max-height:620px) and (max-width:780px){.scene{padding:70px 20px 34px}.scene-id{margin:7px 0 4px}.kicker{font-size:9px}h1,h2{font-size:clamp(28px,7.8vw,42px);margin-bottom:7px}.desc{font-size:11px;line-height:1.65}.divider{margin-bottom:7px}.hint{margin-top:7px}.actions{margin-top:9px}.scene-tabs{margin-top:5px}}
+@media(prefers-reduced-motion:reduce){.control{backdrop-filter:none}}
+</style>
+</head>
+<body>
+<main>
+<section class="experience" id="experience" aria-label="ชมภาพจำลองการเคลื่อนกล้องพร้อมข้อความที่เลื่อนไปตามหน้าเว็บไซต์">
+  <div class="stage" id="stage">
+    <img class="image" id="frame" src="frames/frame-001.webp" alt="ภาพจำลองภายในหอคำหลวง" fetchpriority="high" decoding="async">
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="timeline" role="progressbar" aria-label="ความคืบหน้าของเรื่องราว" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><span id="fill"></span></div>
+    <button class="playback-fab" type="button" id="pauseFab" aria-label="หยุดเล่นตัวอย่าง" title="หยุดเล่นตัวอย่าง"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1"/><rect x="14" y="4" width="5" height="16" rx="1"/></svg></button>
+  </div>
+  <div class="story-track" id="storyTrack">
+    <header class="story-header">
+      <a href="#experience" class="brand"><span class="flower" aria-hidden="true">✦</span><span><span class="thai-name">หอคำหลวง · อุทยานหลวงราชพฤกษ์</span><br><span class="eng-name">ROYAL PARK RAJAPRUEK</span></span></a>
+      <span class="eyemark">CINEMATIC SCROLL · CONCEPT</span>
+    </header>
+    <article class="scene scene--interior" id="interior">
+      <div class="scene-content">
+        <div class="kicker">01 / WITHIN THE PAVILION</div><p class="scene-id">INTERIOR · ความงามภายใน</p>
+        <h1>ความงาม<br>ที่เริ่มต้น<em>จากภายใน</em></h1><div class="divider"></div>
+        <p class="desc">สำรวจลวดลาย ศิลปกรรม และองค์ประกอบตกแต่งภายในหอคำหลวง ก่อนการเดินทางเปิดเผยทัศนียภาพด้านนอก</p>
+        <div class="hint"><svg viewBox="0 0 24 30" aria-hidden="true"><rect x="6" y="1" width="12" height="20" rx="6"/><path d="M12 7v7m-4 10 4 4 4-4"/></svg>เลื่อนลงเพื่อเคลื่อนกล้องและข้อความ</div>
+        <div class="actions"><button class="control primary" id="autoplay" type="button" aria-pressed="false">▶ เล่นตัวอย่าง</button><button class="control" id="toggleText" type="button" aria-pressed="false">ซ่อนข้อความ</button></div>
+        <nav class="scene-tabs" aria-label="ข้ามไปช่วงการเล่าเรื่อง"><button type="button" data-jump="0">01 ภายใน</button><span>·</span><button type="button" data-jump="0.316">02 ผ่านประตู</button><span>·</span><button type="button" data-jump="0.70">03 ภายนอก</button></nav>
+      </div>
+    </article>
+    <article class="scene scene--door" id="doorway">
+      <div class="scene-content">
+        <div class="kicker">02 / THROUGH THE THRESHOLD</div><p class="scene-id">EXIT · จากภายในสู่ภายนอก</p>
+        <h2>ผ่านประตู<br><em>สู่อีกมุมมอง</em></h2><div class="divider"></div>
+        <p class="desc">ซ่อนการกลับทิศกล้องด้วยรายละเอียดไม้แกะสลัก แล้วเคลื่อนผ่านช่องประตูออกสู่แสงธรรมชาติอย่างต่อเนื่อง</p>
+      </div>
+    </article>
+    <article class="scene scene--exterior" id="exterior">
+      <div class="scene-content">
+        <div class="kicker">03 / THE GRAND REVEAL</div><p class="scene-id">EXTERIOR · หอคำหลวงและพื้นที่โดยรอบ</p>
+        <h2>จากหอคำหลวง<br><em>สู่อุทยาน</em></h2><div class="divider"></div>
+        <p class="desc">ใช้แสงบริเวณประตูพรางการเปลี่ยนมุมกล้อง แล้วค่อย ๆ ถอยออกเพื่อเผยอาคารทั้งหลังและพื้นที่สีเขียวที่โอบล้อม</p>
+        <p class="final-note">ภาพและข้อความจะเลื่อนผ่านไปพร้อมกัน</p>
+        <div class="actions"><button class="control" type="button" id="reset">↺ เริ่มชมตั้งแต่ต้น</button></div>
+      </div>
+    </article>
+  </div>
+</section>
+<section class="afterword" id="about"><div><div class="eyebrow">ABOUT THIS DEMONSTRATION</div><h2>จากความงามภายใน<br>สู่ภาพใหญ่ของอุทยาน</h2><p>เว็บตัวอย่างนี้ใช้ภาพ 92 เฟรมควบคุมด้วย Scroll แทนโมเดลสามมิติจริง โดยมีกลวิธีเปลี่ยนทิศทางแบบซ่อนจุดตัดภาพ 2 ครั้ง ข้อความทั้งหมดอยู่ในหน้าเว็บที่เลื่อนตามปกติ ขณะที่ฉากภาพอยู่ด้านหลัง</p><p class="note"><strong>หมายเหตุ:</strong> สถาปัตยกรรมและภูมิทัศน์ในภาพเป็นแบบจำลองเพื่อทดสอบจังหวะกล้อง ไม่ใช่ภาพอาคารจริง</p></div><div><div class="eyebrow">TRANSITION DESIGN</div><ul class="tech"><li><strong>จุดที่ 1:</strong> แผงไม้บดบังภาพ เพื่อซ่อนการกลับทิศจากภายในไปยังทางออก</li><li><strong>จุดที่ 2:</strong> แสงธรรมชาติบริเวณประตูกลบจังหวะเปลี่ยนช็อตก่อนเผยอาคาร</li><li><strong>ตอนจบ:</strong> กล้องถอยออกและยกสูง เผยหอคำหลวงและภูมิทัศน์โดยรอบ</li></ul></div></section>
+</main>
+<script>
+(()=>{
+const experience=document.getElementById('experience');
+const stage=document.getElementById('stage');
+const image=document.getElementById('frame');
+const fill=document.getElementById('fill');
+const bar=document.getElementById('progress');
+const playButton=document.getElementById('autoplay');
+const resetButton=document.getElementById('reset');
+const textButton=document.getElementById('toggleText');
+const fab=document.getElementById('pauseFab');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const TOTAL=92, cache=new Map();
+let current=-1, playing=false, tickId=0, lastTick=0, requested=false;
+const clamp=n=>Math.max(0,Math.min(1,n));
+const path=i=>'frames/frame-'+String(i+1).padStart(3,'0')+'.webp';
+function preload(i){if(i<0||i>=TOTAL||cache.has(i))return;const img=new Image();img.src=path(i);cache.set(i,img)}
+function progress(){const distance=Math.max(1,experience.offsetHeight-innerHeight);return clamp((scrollY-experience.offsetTop)/distance)}
+function render(p){p=clamp(p);const ix=Math.min(TOTAL-1,Math.max(0,Math.round(p*(TOTAL-1))));if(ix!==current){current=ix;image.src=path(ix);image.alt='เฟรม '+(ix+1)+' จาก '+TOTAL+' ของภาพจำลองหอคำหลวง';for(let n=ix-3;n<=ix+8;n++)preload(n)}fill.style.width=(p*100).toFixed(2)+'%';bar.setAttribute('aria-valuenow',String(Math.round(p*100)))}
+function onScroll(){if(requested)return;requested=true;requestAnimationFrame(()=>{requested=false;render(progress())})}
+function jump(p,smooth=true){const length=Math.max(1,experience.offsetHeight-innerHeight);scrollTo({top:experience.offsetTop+length*clamp(p),behavior:smooth&&!reduced.matches?'smooth':'instant'});render(p)}
+function stop(){playing=false;cancelAnimationFrame(tickId);playButton.textContent='▶ เล่นตัวอย่าง';playButton.setAttribute('aria-pressed','false');fab.classList.remove('visible')}
+function play(){if(playing){stop();return}if(reduced.matches){jump(1,false);return}if(progress()>.99)jump(0,false);playing=true;playButton.textContent='Ⅱ หยุดเล่น';playButton.setAttribute('aria-pressed','true');fab.classList.add('visible');lastTick=performance.now();function advance(t){if(!playing)return;const dt=Math.max(0,Math.min(64,t-lastTick));lastTick=t;const next=clamp(progress()+dt/18000);jump(next,false);if(next>=1){stop();return}tickId=requestAnimationFrame(advance)}tickId=requestAnimationFrame(advance)}
+playButton.addEventListener('click',play);
+fab.addEventListener('click',stop);
+resetButton.addEventListener('click',()=>{stop();jump(0)});
+textButton.addEventListener('click',()=>{const hidden=experience.classList.toggle('copy-hidden');textButton.textContent=hidden?'แสดงข้อความ':'ซ่อนข้อความ';textButton.setAttribute('aria-pressed',String(hidden))});
+document.querySelectorAll('[data-jump]').forEach(button=>button.addEventListener('click',()=>{stop();jump(Number(button.dataset.jump))}));
+addEventListener('scroll',onScroll,{passive:true});addEventListener('resize',onScroll,{passive:true});addEventListener('wheel',()=>{if(playing)stop()},{passive:true});addEventListener('touchstart',()=>{if(playing)stop()},{passive:true});addEventListener('keydown',e=>{if(e.key==='Escape'&&playing)stop()});document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});
+for(let i=0;i<12;i++)preload(i);render(progress());
+})();
+</script>
+</body>
+</html>
